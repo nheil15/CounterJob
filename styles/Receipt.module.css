@@ -1,0 +1,340 @@
+.container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding-bottom: 2rem;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.header {
+  background-color: white;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  flex: 1;
+  text-align: center;
+}
+
+.backLink {
+  padding: 0.5rem 1rem;
+  background-color: #f0f0f0;
+  color: #333;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.backLink:active {
+  background-color: #e0e0e0;
+  transform: scale(0.95);
+}
+
+.headerSpace {
+  width: 80px;
+}
+
+.main {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.receipt {
+  background-color: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.receiptHeader {
+  text-align: center;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px dashed #ddd;
+  margin-bottom: 1.5rem;
+}
+
+.receiptHeader h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #333;
+  letter-spacing: 2px;
+}
+
+.storeName {
+  margin: 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.receiptDate {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.9rem;
+  color: #999;
+}
+
+.transactionInfo {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.infoRow:last-child {
+  margin-bottom: 0;
+}
+
+.transactionId {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #d32f2f;
+}
+
+.itemsList {
+  margin-bottom: 1.5rem;
+  border-bottom: 2px dashed #ddd;
+  padding-bottom: 1.5rem;
+}
+
+.itemsHeader {
+  display: grid;
+  grid-template-columns: 3fr 1fr 1.2fr 1.2fr;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #666;
+  text-transform: uppercase;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 0.5rem;
+}
+
+.itemsHeader span:nth-child(2),
+.itemsHeader span:nth-child(3),
+.itemsHeader span:nth-child(4) {
+  text-align: right;
+}
+
+.receiptItem {
+  display: grid;
+  grid-template-columns: 3fr 1fr 1.2fr 1.2fr;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  align-items: center;
+}
+
+.itemName {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.itemQty,
+.itemPrice,
+.itemTotal {
+  text-align: right;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .itemsHeader {
+    grid-template-columns: 2fr 0.8fr 1fr 1fr;
+  }
+  
+  .receiptItem {
+    grid-template-columns: 2fr 0.8fr 1fr 1fr;
+  }
+  
+  .itemName {
+    font-size: 0.9rem;
+  }
+  
+  .itemQty,
+  .itemPrice,
+  .itemTotal {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .itemsHeader {
+    grid-template-columns: 1.5fr 0.6fr 0.9fr 1fr;
+    font-size: 0.75rem;
+  }
+  
+  .receiptItem {
+    grid-template-columns: 1.5fr 0.6fr 0.9fr 1fr;
+    gap: 0.3rem;
+  }
+  
+  .itemName {
+    font-size: 0.85rem;
+  }
+  
+  .itemQty,
+  .itemPrice,
+  .itemTotal {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .itemQty,
+  .itemPrice,
+  .itemTotal {
+    text-align: center;
+  }
+}
+
+.totals {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  color: #666;
+}
+
+.totalRow:last-child {
+  margin-bottom: 0;
+}
+
+.grandTotal {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 2px solid #ddd;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.barcodeSection {
+  text-align: center;
+  padding: 1.5rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.barcodeLabel {
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.barcode {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  margin: 0 auto 1rem;
+  display: block;
+  background-color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.barcodeNumber {
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  letter-spacing: 1px;
+}
+
+.receiptFooter {
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 2px dashed #ddd;
+}
+
+.receiptFooter p {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.backToScannerBtn {
+  width: 100%;
+  padding: 1.25rem;
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.backToScannerBtn:active {
+  background-color: #b71c1c;
+  transform: scale(0.98);
+}
+
+@media (max-width: 480px) {
+  .receipt {
+    padding: 1.5rem;
+  }
+  
+  .receiptHeader h2 {
+    font-size: 1.5rem;
+  }
+  
+  .header h1 {
+    font-size: 1.2rem;
+  }
+}

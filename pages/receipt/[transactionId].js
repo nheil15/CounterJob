@@ -1,0 +1,161 @@
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
+import Head from 'next/head'
+import Link from 'next/link'
+import styles from '../../styles/Receipt.module.css'
+
+export default function Receipt() {
+  const router = useRouter()
+  const { transactionId } = router.query
+  const [transaction, setTransaction] = useState(null)
+
+  useEffect(() => {
+    // Check authentication
+    const userData = localStorage.getItem('user')
+    if (!userData) {
+      router.push('/login')
+      return
+    }
+
+    if (transactionId) {
+      // Load transaction
+      const transactions = JSON.parse(localStorage.getItem('transactions') || '[]')
+      const found = transactions.find(t => t.barcode === transactionId)
+      
+      if (found) {
+        setTransaction(found)
+      } else {
+        // Transaction not found
+        router.push('/scanner')
+      }
+    }
+  }, [transactionId, router])
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  if (!transaction) {
+    return <div className={styles.loading}>Loading receipt...</div>
+  }
+
+  return (
+    <div className={styles.container}>
+      <Head>
+        <title>Receipt - {transaction.id}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+      </Head>
+
+      <header className={styles.header}>
+        <Link href="/scanner" className={styles.backLink}>
+          ← Back
+        </Link>
+        <h1>Receipt</h1>
+        <div className={styles.headerSpace}></div>
+      </header>
+
+      <main className={styles.main}>
+        <div className={styles.receipt}>
+          <div className={styles.receiptHeader}>
+            <h2>RECEIPT</h2>
+            <p className={styles.storeName}>CounterJob Store</p>
+            <p className={styles.receiptDate}>{formatDate(transaction.date)}</p>
+          </div>
+
+          <div className={styles.transactionInfo}>
+            <div className={styles.infoRow}>
+              <span>Transaction ID:</span>
+              <span className={styles.transactionId}>{transaction.id}</span>
+            </div>
+          </div>
+
+          <div className={styles.itemsList}>
+            <div className={styles.itemsHeader}>
+              <span>Item</span>
+              <span>Qty</span>
+              <span>Price</span>
+              <span>Total</span>
+            </div>
+            {transaction.items.map((item, index) => (
+              <div key={index} className={styles.receiptItem}>
+                <span className={styles.itemName}>{item.name}</span>
+                <span className={styles.itemQty}>{item.quantity}</span>
+                <span className={styles.itemPrice}>${item.price.toFixed(2)}</span>
+                <span className={styles.itemTotal}>${(item.price * item.quantity).toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.totals}>
+            <div className={styles.totalRow}>
+              <span>Subtotal:</span>
+              <span>${transaction.subtotal.toFixed(2)}</span>
+            </div>
+            <div className={styles.totalRow}>
+              <span>Tax (10%):</span>
+              <span>${transaction.tax.toFixed(2)}</span>
+            </div>
+            <div className={`${styles.totalRow} ${styles.grandTotal}`}>
+              <span>TOTAL:</span>
+              <span>${transaction.total.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <div className={styles.barcodeSection}>
+            <p className={styles.barcodeLabel}>Transaction Barcode:</p>
+            <svg className={styles.barcode} viewBox="0 0 200 60">
+              <rect x="10" y="10" width="3" height="40" fill="#000"/>
+              <rect x="16" y="10" width="2" height="40" fill="#000"/>
+              <rect x="21" y="10" width="4" height="40" fill="#000"/>
+              <rect x="28" y="10" width="2" height="40" fill="#000"/>
+              <rect x="33" y="10" width="3" height="40" fill="#000"/>
+              <rect x="39" y="10" width="2" height="40" fill="#000"/>
+              <rect x="44" y="10" width="4" height="40" fill="#000"/>
+              <rect x="51" y="10" width="2" height="40" fill="#000"/>
+              <rect x="56" y="10" width="3" height="40" fill="#000"/>
+              <rect x="62" y="10" width="4" height="40" fill="#000"/>
+              <rect x="69" y="10" width="2" height="40" fill="#000"/>
+              <rect x="74" y="10" width="3" height="40" fill="#000"/>
+              <rect x="80" y="10" width="2" height="40" fill="#000"/>
+              <rect x="85" y="10" width="4" height="40" fill="#000"/>
+              <rect x="92" y="10" width="2" height="40" fill="#000"/>
+              <rect x="97" y="10" width="3" height="40" fill="#000"/>
+              <rect x="103" y="10" width="2" height="40" fill="#000"/>
+              <rect x="108" y="10" width="4" height="40" fill="#000"/>
+              <rect x="115" y="10" width="3" height="40" fill="#000"/>
+              <rect x="121" y="10" width="2" height="40" fill="#000"/>
+              <rect x="126" y="10" width="4" height="40" fill="#000"/>
+              <rect x="133" y="10" width="2" height="40" fill="#000"/>
+              <rect x="138" y="10" width="3" height="40" fill="#000"/>
+              <rect x="144" y="10" width="2" height="40" fill="#000"/>
+              <rect x="149" y="10" width="4" height="40" fill="#000"/>
+              <rect x="156" y="10" width="2" height="40" fill="#000"/>
+              <rect x="161" y="10" width="3" height="40" fill="#000"/>
+              <rect x="167" y="10" width="2" height="40" fill="#000"/>
+              <rect x="172" y="10" width="4" height="40" fill="#000"/>
+              <rect x="179" y="10" width="2" height="40" fill="#000"/>
+              <rect x="184" y="10" width="3" height="40" fill="#000"/>
+            </svg>
+            <p className={styles.barcodeNumber}>{transaction.barcode}</p>
+          </div>
+
+          <div className={styles.receiptFooter}>
+            <p>Thank you for your purchase!</p>
+          </div>
+        </div>
+
+        <Link href="/scanner">
+          <button className={styles.backToScannerBtn}>
+            📷 Back to Scanner
+          </button>
+        </Link>
+      </main>
+    </div>
+  )
+}
