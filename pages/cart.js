@@ -68,7 +68,7 @@ export default function Cart() {
 
       <header className={styles.header}>
         <Link href="/scanner" className={styles.backLink}>
-          ← Scanner
+          ←
         </Link>
         <h1>Shopping Cart</h1>
         {cart.length > 0 && (
@@ -137,15 +137,15 @@ export default function Cart() {
               </div>
               <div className={styles.summaryRow}>
                 <span>Subtotal:</span>
-                <span>${calculateTotal().toFixed(2)}</span>
+                <span>${(calculateTotal() * 0.88).toFixed(2)}</span>
               </div>
               <div className={styles.summaryRow}>
-                <span>Tax (10%):</span>
-                <span>${(calculateTotal() * 0.1).toFixed(2)}</span>
+                <span>VAT (12%):</span>
+                <span>${(calculateTotal() * 0.12).toFixed(2)}</span>
               </div>
               <div className={`${styles.summaryRow} ${styles.totalRow}`}>
                 <span>Total:</span>
-                <span>${(calculateTotal() * 1.1).toFixed(2)}</span>
+                <span>${calculateTotal().toFixed(2)}</span>
               </div>
               <Link href="/checkout">
                 <button className={styles.checkoutBtn}>

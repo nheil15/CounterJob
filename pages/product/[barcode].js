@@ -108,7 +108,7 @@ export default function ProductDetails() {
 
       <header className={styles.header}>
         <Link href="/scanner" className={styles.backLink}>
-          ← Back
+          ←
         </Link>
         <h1>Product Details</h1>
         <div className={styles.headerSpace}></div>

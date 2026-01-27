@@ -77,7 +77,7 @@ export default function Profile() {
 
       <header className={styles.header}>
         <Link href="/scanner" className={styles.backLink}>
-          ← Back
+          ←
         </Link>
         <h1>My Profile</h1>
         <div className={styles.headerSpace}></div>

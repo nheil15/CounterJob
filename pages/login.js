@@ -83,7 +83,6 @@ export default function Login() {
 
           <div className={styles.welcomeText}>
             <h2>Welcome!</h2>
-            <p>Sign in with your Google account</p>
           </div>
 
           {error && (
@@ -132,21 +131,6 @@ export default function Login() {
                 Use your Gmail or Google Workspace account
               </p>
             </form>
-          </div>
-
-          <div className={styles.features}>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>📷</span>
-              <span>Scan Barcodes</span>
-            </div>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>🛍️</span>
-              <span>Manage Cart</span>
-            </div>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>💳</span>
-              <span>Easy Checkout</span>
-            </div>
           </div>
         </div>
       </main>

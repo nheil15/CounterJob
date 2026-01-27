@@ -39,20 +39,23 @@
 }
 
 .backLink {
-  padding: 0.5rem 1rem;
-  background-color: #f0f0f0;
+  padding: 0.5rem;
+  background-color: transparent;
   color: #333;
   text-decoration: none;
   border-radius: 6px;
   font-weight: 500;
+  font-size: 1.5rem;
   transition: all 0.2s;
   touch-action: manipulation;
   user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .backLink:active {
-  background-color: #e0e0e0;
-  transform: scale(0.95);
+  transform: scale(0.9);
 }
 
 .headerSpace {

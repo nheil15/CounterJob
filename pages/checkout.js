@@ -81,7 +81,7 @@ export default function Checkout() {
 
       <header className={styles.header}>
         <Link href="/scanner" className={styles.backLink}>
-          ← Back
+          ←
         </Link>
         <h1>✓ Transaction Complete</h1>
         <div className={styles.headerSpace}></div>
@@ -98,7 +98,7 @@ export default function Checkout() {
           <div className={styles.transactionInfo}>
             <div className={styles.infoRow}>
               <span>Transaction ID:</span>
-              <span className={styles.transactionId}>{transaction.id}</span>
+              <span className={styles.transactionId}>{transaction.id.replace('TXN', '')}</span>
             </div>
           </div>
 
@@ -125,7 +125,7 @@ export default function Checkout() {
               <span>${transaction.subtotal.toFixed(2)}</span>
             </div>
             <div className={styles.totalRow}>
-              <span>Tax (10%):</span>
+              <span>VAT (12%):</span>
               <span>${transaction.tax.toFixed(2)}</span>
             </div>
             <div className={`${styles.totalRow} ${styles.grandTotal}`}>
@@ -170,7 +170,7 @@ export default function Checkout() {
               <rect x="179" y="10" width="2" height="40" fill="#000"/>
               <rect x="184" y="10" width="3" height="40" fill="#000"/>
             </svg>
-            <p className={styles.barcodeNumber}>{transaction.barcode}</p>
+            <p className={styles.barcodeNumber}>{transaction.barcode.replace('TXN', '')}</p>
           </div>
 
           <div className={styles.receiptFooter}>

@@ -30,20 +30,23 @@
 }
 
 .backLink {
-  padding: 0.5rem 1rem;
-  background-color: #f0f0f0;
+  padding: 0.5rem;
+  background-color: transparent;
   color: #333;
   text-decoration: none;
   border-radius: 6px;
   font-weight: 500;
+  font-size: 1.5rem;
   transition: all 0.2s;
   touch-action: manipulation;
   user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .backLink:active {
-  background-color: #e0e0e0;
-  transform: scale(0.95);
+  transform: scale(0.9);
 }
 
 .clearCartBtn {
@@ -273,25 +276,49 @@
 
 @media (max-width: 480px) {
   .cartItem {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
+    grid-template-columns: 1.2fr auto auto auto auto;
+    gap: 0.25rem;
+    padding: 0.5rem;
   }
   
   .itemName {
-    white-space: normal;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .quantityControl {
-    justify-self: center;
+    padding: 0.15rem;
   }
   
-  .itemPrice,
+  .quantityBtn {
+    width: 24px;
+    height: 24px;
+    font-size: 0.9rem;
+  }
+  
+  .quantityDisplay {
+    min-width: 30px;
+    font-size: 0.85rem;
+  }
+  
+  .itemPrice {
+    font-size: 0.8rem;
+    min-width: 50px;
+    text-align: right;
+  }
+  
   .itemTotal {
-    text-align: center;
+    font-size: 0.85rem;
+    min-width: 55px;
+    text-align: right;
   }
   
   .removeBtn {
-    justify-self: center;
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
   }
 }
 

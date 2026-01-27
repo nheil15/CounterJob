@@ -209,6 +209,16 @@
       "description": "Classic Coca-Cola soft drink in a 2-liter bottle. Refreshing and crisp.",
       "brand": "Coca-Cola",
       "sku": "CC-COLA-2L"
+    },
+    {
+      "barcode": "4807770270055",
+      "name": "Lucky Me Pancit Canton",
+      "price": 0.75,
+      "category": "Food & Beverage",
+      "stock": 500,
+      "description": "Instant stir-fry noodles with savory chili-mansi flavor. 60g pack.",
+      "brand": "Lucky Me",
+      "sku": "LM-PC-60G"
     }
   ]
 }
