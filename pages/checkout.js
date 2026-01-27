@@ -120,8 +120,8 @@ export default function Checkout() {
               <div key={index} className={styles.receiptItem}>
                 <span className={styles.itemName}>{item.name}</span>
                 <span className={styles.itemQty}>{item.quantity}</span>
-                <span className={styles.itemPrice}>${item.price.toFixed(2)}</span>
-                <span className={styles.itemTotal}>${(item.price * item.quantity).toFixed(2)}</span>
+                <span className={styles.itemPrice}>Php{item.price.toFixed(2)}</span>
+                <span className={styles.itemTotal}>Php{(item.price * item.quantity).toFixed(2)}</span>
               </div>
             ))}
           </div>
@@ -129,15 +129,15 @@ export default function Checkout() {
           <div className={styles.totals}>
             <div className={styles.totalRow}>
               <span>Subtotal:</span>
-              <span>${transaction.subtotal.toFixed(2)}</span>
+              <span>Php{transaction.subtotal.toFixed(2)}</span>
             </div>
             <div className={styles.totalRow}>
               <span>VAT (12%):</span>
-              <span>${transaction.tax.toFixed(2)}</span>
+              <span>Php{transaction.tax.toFixed(2)}</span>
             </div>
             <div className={`${styles.totalRow} ${styles.grandTotal}`}>
               <span>TOTAL:</span>
-              <span>${transaction.total.toFixed(2)}</span>
+              <span>Php{transaction.total.toFixed(2)}</span>
             </div>
           </div>
 

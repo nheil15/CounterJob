@@ -203,7 +203,7 @@
     {
       "barcode": "5449000009067",
       "name": "Coca Cola 2L",
-      "price": 3.99,
+      "price": 25.00,
       "category": "Food & Beverage",
       "stock": 240,
       "description": "Classic Coca-Cola soft drink in a 2-liter bottle. Refreshing and crisp.",
@@ -213,7 +213,7 @@
     {
       "barcode": "4807770270055",
       "name": "Lucky Me Pancit Canton",
-      "price": 0.75,
+      "price": 20.00,
       "category": "Food & Beverage",
       "stock": 500,
       "description": "Instant stir-fry noodles with savory chili-mansi flavor. 60g pack.",

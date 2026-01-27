@@ -123,8 +123,8 @@ export default function Cart() {
                     </button>
                   </div>
                   
-                  <span className={styles.itemPrice}>${item.price.toFixed(2)}</span>
-                  <span className={styles.itemTotal}>${(item.price * item.quantity).toFixed(2)}</span>
+                  <span className={styles.itemPrice}>Php{item.price.toFixed(2)}</span>
+                  <span className={styles.itemTotal}>Php{(item.price * item.quantity).toFixed(2)}</span>
                   
                   <button 
                     onClick={() => removeFromCart(item.barcode)}
@@ -144,15 +144,15 @@ export default function Cart() {
               </div>
               <div className={styles.summaryRow}>
                 <span>Subtotal:</span>
-                <span>${(calculateTotal() * 0.88).toFixed(2)}</span>
+                <span>Php{(calculateTotal() * 0.88).toFixed(2)}</span>
               </div>
               <div className={styles.summaryRow}>
                 <span>VAT (12%):</span>
-                <span>${(calculateTotal() * 0.12).toFixed(2)}</span>
+                <span>Php{(calculateTotal() * 0.12).toFixed(2)}</span>
               </div>
               <div className={`${styles.summaryRow} ${styles.totalRow}`}>
                 <span>Total:</span>
-                <span>${calculateTotal().toFixed(2)}</span>
+                <span>Php{calculateTotal().toFixed(2)}</span>
               </div>
               <Link href="/checkout">
                 <button className={styles.checkoutBtn}>

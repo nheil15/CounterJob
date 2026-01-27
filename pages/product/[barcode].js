@@ -129,7 +129,7 @@ export default function ProductDetails() {
             
             {!product.notFound && (
               <div className={styles.priceTag}>
-                ${product.price.toFixed(2)}
+                Php{product.price.toFixed(2)}
               </div>
             )}
             
@@ -171,7 +171,7 @@ export default function ProductDetails() {
                 <div className={styles.subtotalSection}>
                   <span className={styles.subtotalLabel}>Subtotal:</span>
                   <span className={styles.subtotalValue}>
-                    ${(product.price * quantity).toFixed(2)}
+                    Php{(product.price * quantity).toFixed(2)}
                   </span>
                 </div>
 
