@@ -10,6 +10,8 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false)
   const [editedName, setEditedName] = useState('')
   const [editedEmail, setEditedEmail] = useState('')
+  const [transactions, setTransactions] = useState([])
+  const [showHistory, setShowHistory] = useState(false)
 
   useEffect(() => {
     // Check authentication
@@ -23,6 +25,14 @@ export default function Profile() {
     setUser(parsedUser)
     setEditedName(parsedUser.name)
     setEditedEmail(parsedUser.email)
+
+    // Load user's transactions
+    const allTransactions = JSON.parse(localStorage.getItem('transactions') || '[]')
+    // Filter transactions for current user
+    const userTransactions = allTransactions.filter(t => t.user?.email === parsedUser.email)
+    // Sort by date (newest first)
+    userTransactions.sort((a, b) => new Date(b.date) - new Date(a.date))
+    setTransactions(userTransactions)
   }, [router])
 
   const handleLogout = () => {
@@ -159,8 +169,10 @@ export default function Profile() {
                   <input
                     type="email"
                     value={editedEmail}
-                    onChange={(e) => setEditedEmail(e.target.value)}
                     placeholder="Enter your email"
+                    readOnly
+                    disabled
+                    className={styles.disabledInput}
                   />
                 </div>
 
@@ -169,7 +181,7 @@ export default function Profile() {
                     onClick={handleSaveProfile}
                     className={styles.saveButton}
                   >
-                    💾 Save Changes
+                    Save Changes
                   </button>
                   <button 
                     onClick={handleCancelEdit}
@@ -181,18 +193,72 @@ export default function Profile() {
               </div>
             )}
           </div>
+        </div>
 
-          <div className={styles.actionsSection}>
-            <Link href="/cart" className={styles.actionButton}>
-              🛒 View Cart
-            </Link>
-            <button 
-              onClick={handleLogout}
-              className={styles.logoutButton}
-            >
-              🚪 Logout
-            </button>
+        {/* Transaction History Section */}
+        <div className={styles.transactionsSection}>
+          <div className={styles.historyHeader}>
+            <h2 className={styles.sectionTitle}>
+              Purchase History
+              {transactions.length > 0 && (
+                <span className={styles.transactionCount}>{transactions.length}</span>
+              )}
+            </h2>
+
+            {transactions.length > 0 && (
+              <div 
+                className={styles.viewAllLink}
+                onClick={() => setShowHistory(!showHistory)}
+              >
+                {showHistory ? 'Hide All →' : 'View All →'}
+              </div>
+            )}
           </div>
+          
+          {showHistory && (
+            <>
+              {transactions.length === 0 ? (
+                <div className={styles.emptyState}>
+                  <p>No transactions yet</p>
+                  <Link href="/scanner" className={styles.startShoppingLink}>
+                    Start Shopping
+                  </Link>
+                </div>
+              ) : (
+                <div className={styles.transactionsList}>
+                  {transactions.map((transaction) => (
+                    <Link
+                      key={transaction.id}
+                      href={`/receipt/${transaction.barcode}`}
+                      className={styles.transactionCard}
+                    >
+                      <div className={styles.transactionHeader}>
+                        <span className={styles.transactionId}>
+                          {transaction.barcode.replace('TXN', '')}
+                        </span>
+                        <span className={styles.transactionTotal}>
+                          ${transaction.total.toFixed(2)}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Actions Section */}
+        <div className={styles.actionsSection}>
+          <Link href="/cart" className={styles.actionButton}>
+            View Cart
+          </Link>
+          <button 
+            onClick={handleLogout}
+            className={styles.logoutButton}
+          >
+            Logout
+          </button>
         </div>
       </main>
     </div>

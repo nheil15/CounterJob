@@ -323,6 +323,9 @@
   margin-top: 2rem;
 }
 
+.viewReceiptBtn,
+.viewHistoryBtn,
+.backToScannerBtn,
 .newTransactionBtn,
 .backToCartBtn {
   padding: 1.25rem;
@@ -336,6 +339,37 @@
   user-select: none;
   text-align: center;
   text-decoration: none;
+  width: 100%;
+}
+
+.viewReceiptBtn {
+  background-color: #1976d2;
+  color: white;
+}
+
+.viewReceiptBtn:active {
+  background-color: #1565c0;
+  transform: scale(0.98);
+}
+
+.viewHistoryBtn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.viewHistoryBtn:active {
+  background-color: #388e3c;
+  transform: scale(0.98);
+}
+
+.backToScannerBtn {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.backToScannerBtn:active {
+  background-color: #b71c1c;
+  transform: scale(0.98);
 }
 
 .newTransactionBtn {

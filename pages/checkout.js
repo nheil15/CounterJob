@@ -83,7 +83,7 @@ export default function Checkout() {
         <Link href="/scanner" className={styles.backLink}>
           ←
         </Link>
-        <h1>✓ Transaction Complete</h1>
+        <h1>Transaction Complete</h1>
         <div className={styles.headerSpace}></div>
       </header>
 
@@ -91,7 +91,7 @@ export default function Checkout() {
         <div className={styles.receipt}>
           <div className={styles.receiptHeader}>
             <h2>RECEIPT</h2>
-            <p className={styles.storeName}>CounterJob Store</p>
+            <p className={styles.storeName}>Sari-Sari Store</p>
             <p className={styles.receiptDate}>{formatDate(transaction.date)}</p>
           </div>
 

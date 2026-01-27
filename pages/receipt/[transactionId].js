@@ -2,12 +2,16 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import Link from 'next/link'
+import BarcodeScanner from '../../components/BarcodeScanner'
 import styles from '../../styles/Receipt.module.css'
 
 export default function Receipt() {
   const router = useRouter()
   const { transactionId } = router.query
   const [transaction, setTransaction] = useState(null)
+  const [showScanner, setShowScanner] = useState(false)
+  const [scannedProduct, setScannedProduct] = useState(null)
+  const [products, setProducts] = useState([])
 
   useEffect(() => {
     // Check authentication
@@ -16,6 +20,12 @@ export default function Receipt() {
       router.push('/login')
       return
     }
+
+    // Load products
+    fetch('/data/products.json')
+      .then(res => res.json())
+      .then(data => setProducts(data.products))
+      .catch(err => console.error('Failed to load products:', err))
 
     if (transactionId) {
       // Load transaction
@@ -30,6 +40,44 @@ export default function Receipt() {
       }
     }
   }, [transactionId, router])
+
+  const handleScan = (barcode) => {
+    console.log('Scanned barcode:', barcode)
+    
+    // Find product by barcode
+    const product = products.find(p => p.barcode === barcode)
+    
+    if (product) {
+      setScannedProduct(product)
+    } else {
+      // Show error if product not found
+      setScannedProduct({ error: 'Product not found', barcode })
+    }
+  }
+
+  const handleScanError = (error) => {
+    console.error('Scanner error:', error)
+  }
+
+  const toggleScanner = () => {
+    setShowScanner(!showScanner)
+    if (showScanner) {
+      setScannedProduct(null)
+    }
+  }
+
+  const handleDelete = () => {
+    if (confirm('Are you sure you want to delete this receipt? This action cannot be undone and the receipt will be permanently deleted.')) {
+      // Get all transactions
+      const transactions = JSON.parse(localStorage.getItem('transactions') || '[]')
+      // Filter out the current transaction
+      const updatedTransactions = transactions.filter(t => t.barcode !== transactionId)
+      // Save back to localStorage
+      localStorage.setItem('transactions', JSON.stringify(updatedTransactions))
+      // Redirect to profile
+      router.push('/profile')
+    }
+  }
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString('en-US', {
@@ -62,9 +110,17 @@ export default function Receipt() {
 
       <main className={styles.main}>
         <div className={styles.receipt}>
+          <button 
+            className={styles.deleteButton}
+            onClick={handleDelete}
+            title="Delete receipt"
+          >
+            🗑️
+          </button>
+          
           <div className={styles.receiptHeader}>
             <h2>RECEIPT</h2>
-            <p className={styles.storeName}>CounterJob</p>
+            <p className={styles.storeName}>Sari-Sari</p>
             <p className={styles.receiptDate}>{formatDate(transaction.date)}</p>
           </div>
 
@@ -149,12 +205,6 @@ export default function Receipt() {
             <p>Thank you for your purchase!</p>
           </div>
         </div>
-
-        <Link href="/scanner">
-          <button className={styles.backToScannerBtn}>
-            📷 Back to Scanner
-          </button>
-        </Link>
       </main>
     </div>
   )
