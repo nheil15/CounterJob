@@ -16,6 +16,13 @@ export default function Checkout() {
       router.push('/login')
       return
     }
+    
+    const parsedUser = JSON.parse(userData)
+    // Check if user is actually logged in (undefined means old user, treat as logged in)
+    if (parsedUser.isLoggedIn === false) {
+      router.push('/login')
+      return
+    }
 
     // Load cart
     const savedCart = localStorage.getItem('cart')

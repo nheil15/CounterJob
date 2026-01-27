@@ -20,6 +20,13 @@ export default function Receipt() {
       router.push('/login')
       return
     }
+    
+    const parsedUser = JSON.parse(userData)
+    // Check if user is actually logged in (undefined means old user, treat as logged in)
+    if (parsedUser.isLoggedIn === false) {
+      router.push('/login')
+      return
+    }
 
     // Load products
     fetch('/data/products.json')

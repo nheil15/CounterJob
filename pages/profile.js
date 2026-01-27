@@ -22,6 +22,11 @@ export default function Profile() {
     }
     
     const parsedUser = JSON.parse(userData)
+    // Check if user is actually logged in (undefined means old user, treat as logged in)
+    if (parsedUser.isLoggedIn === false) {
+      router.push('/login')
+      return
+    }
     setUser(parsedUser)
     setEditedName(parsedUser.name)
     setEditedEmail(parsedUser.email)
@@ -37,7 +42,13 @@ export default function Profile() {
 
   const handleLogout = () => {
     if (confirm('Are you sure you want to logout?')) {
-      localStorage.removeItem('user')
+      // Keep user profile data but mark as logged out
+      const userData = localStorage.getItem('user')
+      if (userData) {
+        const parsedUser = JSON.parse(userData)
+        parsedUser.isLoggedIn = false
+        localStorage.setItem('user', JSON.stringify(parsedUser))
+      }
       localStorage.removeItem('authToken')
       localStorage.removeItem('cart')
       router.push('/login')

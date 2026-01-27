@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
+import Script from 'next/script'
 import styles from '../styles/Login.module.css'
 
 export default function Login() {
@@ -8,14 +9,94 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [email, setEmail] = useState('')
+  const [googleLoaded, setGoogleLoaded] = useState(false)
 
   useEffect(() => {
     // Check if already logged in
     const user = localStorage.getItem('user')
     if (user) {
-      router.push('/scanner')
+      const parsedUser = JSON.parse(user)
+      // Only redirect if user is actually logged in (not explicitly logged out)
+      if (parsedUser.isLoggedIn !== false) {
+        router.push('/scanner')
+      }
     }
   }, [router])
+
+  const handleGoogleSuccess = (response) => {
+    try {
+      const credential = response.credential
+      // Decode JWT token to get user info
+      const payload = JSON.parse(atob(credential.split('.')[1]))
+      
+      // Check if user already exists
+      const existingUser = localStorage.getItem('user')
+      let userData
+      
+      if (existingUser) {
+        const parsedUser = JSON.parse(existingUser)
+        // If same email, keep ALL existing profile data (name, picture, loggedInAt)
+        if (parsedUser.email === payload.email) {
+          userData = {
+            ...parsedUser,
+            isLoggedIn: true, // Mark as logged in
+          }
+        } else {
+          // Different email, create new user
+          userData = {
+            email: payload.email,
+            name: payload.name || payload.email.split('@')[0],
+            picture: payload.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(payload.name)}&background=4285f4&color=fff&bold=true`,
+            loggedInAt: new Date().toISOString(),
+            isLoggedIn: true,
+          }
+        }
+      } else {
+        // New user, create profile
+        userData = {
+          email: payload.email,
+          name: payload.name || payload.email.split('@')[0],
+          picture: payload.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(payload.name)}&background=4285f4&color=fff&bold=true`,
+          loggedInAt: new Date().toISOString(),
+          isLoggedIn: true,
+        }
+      }
+
+      // Store user data
+      localStorage.setItem('user', JSON.stringify(userData))
+      
+      // Redirect to scanner
+      router.push('/scanner')
+    } catch (err) {
+      console.error('Google login error:', err)
+      setError('Failed to sign in with Google. Please try again.')
+    }
+  }
+
+  useEffect(() => {
+    if (googleLoaded && window.google) {
+      try {
+        window.google.accounts.id.initialize({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '574950878790-jnqg90q5pnmbj5jhqe3a73lkvl71h2li.apps.googleusercontent.com',
+          callback: handleGoogleSuccess,
+          auto_select: false,
+        })
+        
+        window.google.accounts.id.renderButton(
+          document.getElementById('googleSignInButton'),
+          { 
+            theme: 'outline', 
+            size: 'large',
+            width: 280,
+            text: 'signin_with',
+            shape: 'rectangular'
+          }
+        )
+      } catch (err) {
+        console.error('Google Sign-In initialization error:', err)
+      }
+    }
+  }, [googleLoaded])
 
   const handleGoogleLogin = (e) => {
     e.preventDefault()
@@ -45,17 +126,48 @@ export default function Login() {
     setIsLoading(true)
     setError('')
 
-    // Extract name from email
-    const username = email.split('@')[0].replace(/[._]/g, ' ')
-    const name = username.split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ')
+    // Check if user already exists
+    const existingUser = localStorage.getItem('user')
+    let userData
+    
+    if (existingUser) {
+      const parsedUser = JSON.parse(existingUser)
+      // If same email, keep ALL existing profile data (name, picture, loggedInAt)
+      if (parsedUser.email === email) {
+        userData = {
+          ...parsedUser,
+          isLoggedIn: true, // Mark as logged in
+        }
+      } else {
+        // Different email, create new user
+        // Extract name from email
+        const username = email.split('@')[0].replace(/[._]/g, ' ')
+        const name = username.split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
 
-    const userData = {
-      email: email,
-      name: name || 'User',
-      picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4285f4&color=fff&bold=true`,
-      loggedInAt: new Date().toISOString(),
+        userData = {
+          email: email,
+          name: name || 'User',
+          picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4285f4&color=fff&bold=true`,
+          loggedInAt: new Date().toISOString(),
+          isLoggedIn: true,
+        }
+      }
+    } else {
+      // New user, extract name from email
+      const username = email.split('@')[0].replace(/[._]/g, ' ')
+      const name = username.split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+
+      userData = {
+        email: email,
+        name: name || 'User',
+        picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4285f4&color=fff&bold=true`,
+        loggedInAt: new Date().toISOString(),
+        isLoggedIn: true,
+      }
     }
 
     // Store user data
