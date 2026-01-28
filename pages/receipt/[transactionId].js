@@ -13,6 +13,7 @@ export default function Receipt() {
   const [showScanner, setShowScanner] = useState(false)
   const [scannedProduct, setScannedProduct] = useState(null)
   const [products, setProducts] = useState([])
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   useEffect(() => {
     const loadData = async () => {
@@ -40,8 +41,11 @@ export default function Receipt() {
 
       if (transactionId) {
         try {
+          const userData = localStorage.getItem('user')
+          const user = JSON.parse(userData)
+          
           // Load transaction from Firestore
-          const found = await getTransactionByBarcode(transactionId)
+          const found = await getTransactionByBarcode(transactionId, user.email)
           
           if (found) {
             setTransaction(found)
@@ -92,21 +96,27 @@ export default function Receipt() {
     }
   }
 
-  const handleDelete = async () => {
-    if (confirm('Are you sure you want to delete this receipt? This action cannot be undone and the receipt will be permanently deleted.')) {
-      try {
-        // Delete from Firestore
-        await deleteTransaction(transactionId)
-        // Redirect to profile
-        router.push('/profile')
-      } catch (error) {
-        console.error('Error deleting transaction:', error)
-        // Fallback to localStorage
-        const transactions = JSON.parse(localStorage.getItem('transactions') || '[]')
-        const updatedTransactions = transactions.filter(t => t.barcode !== transactionId)
-        localStorage.setItem('transactions', JSON.stringify(updatedTransactions))
-        router.push('/profile')
-      }
+  const handleDelete = () => {
+    setShowDeleteDialog(true)
+  }
+
+  const confirmDelete = async () => {
+    setShowDeleteDialog(false)
+    try {
+      const userData = localStorage.getItem('user')
+      const user = JSON.parse(userData)
+      
+      // Delete from Firestore
+      await deleteTransaction(transactionId, user.email)
+      // Redirect to profile
+      router.push('/profile')
+    } catch (error) {
+      console.error('Error deleting transaction:', error)
+      // Fallback to localStorage
+      const transactions = JSON.parse(localStorage.getItem('transactions') || '[]')
+      const updatedTransactions = transactions.filter(t => t.barcode !== transactionId)
+      localStorage.setItem('transactions', JSON.stringify(updatedTransactions))
+      router.push('/profile')
     }
   }
 
@@ -121,7 +131,11 @@ export default function Receipt() {
   }
 
   if (!transaction) {
-    return <div className={styles.loading}>Loading receipt...</div>
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner}></div>
+      </div>
+    )
   }
 
   return (
@@ -171,10 +185,10 @@ export default function Receipt() {
             </div>
             {transaction.items.map((item, index) => (
               <div key={index} className={styles.receiptItem}>
-                <span className={styles.itemName}>{item.name}</span>
-                <span className={styles.itemQty}>{item.quantity}</span>
+                <span className={styles.itemName}>{item.item || item.name}</span>
+                <span className={styles.itemQty}>{item.qty || item.quantity}</span>
                 <span className={styles.itemPrice}>Php{item.price.toFixed(2)}</span>
-                <span className={styles.itemTotal}>Php{(item.price * item.quantity).toFixed(2)}</span>
+                <span className={styles.itemTotal}>Php{item.subtotal ? item.subtotal.toFixed(2) : (item.price * (item.qty || item.quantity)).toFixed(2)}</span>
               </div>
             ))}
           </div>
@@ -182,11 +196,11 @@ export default function Receipt() {
           <div className={styles.totals}>
             <div className={styles.totalRow}>
               <span>Subtotal:</span>
-              <span>Php{transaction.subtotal.toFixed(2)}</span>
+              <span>Php{(transaction.subtotal || transaction.total * 0.88).toFixed(2)}</span>
             </div>
             <div className={styles.totalRow}>
               <span>VAT (12%):</span>
-              <span>Php{transaction.tax.toFixed(2)}</span>
+              <span>Php{(transaction.tax || transaction.total * 0.12).toFixed(2)}</span>
             </div>
             <div className={`${styles.totalRow} ${styles.grandTotal}`}>
               <span>TOTAL:</span>
@@ -237,6 +251,32 @@ export default function Receipt() {
           </div>
         </div>
       </main>
+
+      {/* Custom Delete Confirmation Dialog */}
+      {showDeleteDialog && (
+        <div className={styles.dialogOverlay}>
+          <div className={styles.dialogBox}>
+            <h3 className={styles.dialogTitle}>Delete Receipt?</h3>
+            <p className={styles.dialogMessage}>
+              Are you sure you want to delete this receipt? This action cannot be undone.
+            </p>
+            <div className={styles.dialogActions}>
+              <button 
+                className={styles.dialogCancel}
+                onClick={() => setShowDeleteDialog(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className={styles.dialogConfirm}
+                onClick={confirmDelete}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

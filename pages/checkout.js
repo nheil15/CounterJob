@@ -40,10 +40,11 @@ export default function Checkout() {
         // Generate transaction ID
         const transactionId = 'TXN' + Date.now()
         
-        // Calculate totals
-        const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
-        const tax = subtotal * 0.12
-        const total = subtotal + tax
+        // Calculate totals - match cart calculation
+        const itemsTotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
+        const subtotal = itemsTotal * 0.88  // 88% of items total
+        const tax = itemsTotal * 0.12       // 12% of items total
+        const total = itemsTotal             // Total is 100%
 
         // Create transaction
         const newTransaction = {
@@ -60,13 +61,21 @@ export default function Checkout() {
         // Save transaction to Firestore
         await createTransaction(newTransaction)
         
-        setTransaction(newTransaction)
-
-        // Clear cart from Firestore
+        // Clear cart from Firestore BEFORE setting transaction to prevent re-render issues
         await clearCartFirestore(parsedUser.email)
+        
+        // Also save to localStorage for backup/offline
+        const transactions = JSON.parse(localStorage.getItem('transactions') || '[]')
+        transactions.push(newTransaction)
+        localStorage.setItem('transactions', JSON.stringify(transactions))
+        localStorage.removeItem('cart')
+        
+        setTransaction(newTransaction)
       } catch (error) {
         console.error('Error processing checkout:', error)
-        // Fallback to localStorage
+        alert('Checkout failed: ' + error.message)
+        router.push('/cart')
+        return
         const savedCart = localStorage.getItem('cart')
         if (!savedCart || JSON.parse(savedCart).length === 0) {
           router.push('/cart')
@@ -77,9 +86,10 @@ export default function Checkout() {
         setCart(cartItems)
 
         const transactionId = 'TXN' + Date.now()
-        const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
-        const tax = subtotal * 0.12
-        const total = subtotal + tax
+        const itemsTotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
+        const subtotal = itemsTotal * 0.88
+        const tax = itemsTotal * 0.12
+        const total = itemsTotal
 
         const newTransaction = {
           id: transactionId,
@@ -116,7 +126,11 @@ export default function Checkout() {
   }
 
   if (!transaction) {
-    return <div className={styles.loading}>Processing checkout...</div>
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner}></div>
+      </div>
+    )
   }
 
   return (

@@ -56,8 +56,12 @@ export default function Scanner() {
     // Check if it's a transaction barcode
     if (barcode.startsWith('TXN')) {
       try {
+        // Get user email
+        const userData = localStorage.getItem('user')
+        const user = JSON.parse(userData)
+        
         // Look up transaction in Firestore
-        const transaction = await getTransactionByBarcode(barcode)
+        const transaction = await getTransactionByBarcode(barcode, user.email)
         
         if (transaction) {
           router.push(`/receipt/${barcode}`)

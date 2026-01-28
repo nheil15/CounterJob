@@ -189,11 +189,20 @@ export default function Cart() {
                 <span>Total:</span>
                 <span>Php{calculateTotal().toFixed(2)}</span>
               </div>
-              <Link href="/checkout">
-                <button className={styles.checkoutBtn}>
-                  Checkout
-                </button>
-              </Link>
+              <div className={styles.actionButtons}>
+                <Link href="/scanner" className={styles.scannerBtn}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="7" width="20" height="13" rx="2" stroke="currentColor" strokeWidth="2"/>
+                    <path d="M7 4h10l2 3H5l2-3z" fill="currentColor"/>
+                    <circle cx="12" cy="13" r="3" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
+                </Link>
+                <Link href="/checkout" className={styles.checkoutBtnWrapper}>
+                  <button className={styles.checkoutBtn}>
+                    Checkout
+                  </button>
+                </Link>
+              </div>
             </div>
           </>
         )}

@@ -6,19 +6,19 @@
       "price": 25.00,
       "category": "Food & Beverage",
       "stock": 240,
-      "description": "Classic Coca-Cola soft drink in a 2-liter bottle. Refreshing and crisp.",
       "brand": "Coca-Cola",
-      "sku": "CC-COLA-2L"
+      "sku": "CC-COLA-2L",
+      "image": "https://images.unsplash.com/photo-1554866585-cd94860890b7?w=400&h=400&fit=crop"
     },
     {
-      "barcode": "4807770270055",
-      "name": "Lucky Me Pancit Canton",
+      "barcode": "4807770270024",
+      "name": "Lucky Me Chicken na Chicken 55g",
       "price": 20.00,
-      "category": "Food & Beverage",
+      "category": "Instan Noodles",
       "stock": 500,
-      "description": "Instant stir-fry noodles with savory chili-mansi flavor. 60g pack.",
       "brand": "Lucky Me",
-      "sku": "LM-PC-60G"
+      "sku": "LM-PC-60G",
+      "image": "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400&h=400&fit=crop"
     }
   ]
 }

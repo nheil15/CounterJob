@@ -11,6 +11,7 @@ export default function ProductDetails() {
   const [product, setProduct] = useState(null)
   const [quantity, setQuantity] = useState(1)
   const [cart, setCart] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // Check authentication
@@ -22,6 +23,7 @@ export default function ProductDetails() {
 
     const loadData = async () => {
       if (barcode) {
+        setLoading(true)
         try {
           // Find product in Firestore
           const foundProduct = await getProductByBarcode(barcode)
@@ -41,7 +43,18 @@ export default function ProductDetails() {
           }
         } catch (error) {
           console.error('Error loading product:', error)
+          // Show error message to user
+          setProduct({
+            barcode: barcode,
+            name: 'Error Loading Product',
+            price: 0,
+            category: 'Unknown',
+            stock: 0,
+            description: 'Failed to load product from database. Error: ' + error.message,
+            notFound: true
+          })
         }
+        setLoading(false)
       }
 
       // Load cart from Firestore
@@ -56,6 +69,8 @@ export default function ProductDetails() {
         if (savedCart) {
           setCart(JSON.parse(savedCart))
         }
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -117,10 +132,10 @@ export default function ProductDetails() {
     router.push('/cart')
   }
 
-  if (!product) {
+  if (loading || !product) {
     return (
-      <div className={styles.container}>
-        <div className={styles.loading}>Loading...</div>
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner}></div>
       </div>
     )
   }
@@ -143,7 +158,18 @@ export default function ProductDetails() {
       <main className={styles.main}>
         <div className={styles.productDetails}>
           <div className={styles.productImage}>
-            <div className={styles.imagePlaceholder}>
+            {product.image ? (
+              <img 
+                src={product.image} 
+                alt={product.name}
+                className={styles.productImg}
+                onError={(e) => {
+                  e.target.style.display = 'none'
+                  e.target.nextSibling.style.display = 'flex'
+                }}
+              />
+            ) : null}
+            <div className={styles.imagePlaceholder} style={{ display: product.image ? 'none' : 'flex' }}>
               📦
             </div>
           </div>
@@ -158,11 +184,6 @@ export default function ProductDetails() {
                 Php{product.price.toFixed(2)}
               </div>
             )}
-            
-            <div className={styles.description}>
-              <h3>Description</h3>
-              <p>{product.description}</p>
-            </div>
 
             {!product.notFound && (
               <div className={styles.cartActions}>

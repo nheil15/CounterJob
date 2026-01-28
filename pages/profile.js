@@ -258,7 +258,7 @@ export default function Profile() {
                           {transaction.barcode.replace('TXN', '')}
                         </span>
                         <span className={styles.transactionTotal}>
-                          ${transaction.total.toFixed(2)}
+                          Php{transaction.total.toFixed(2)}
                         </span>
                       </div>
                     </Link>
