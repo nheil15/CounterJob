@@ -4,6 +4,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import BarcodeScanner from '../../components/BarcodeScanner'
 import styles from '../../styles/Receipt.module.css'
+import { getTransactionByBarcode, deleteTransaction, getAllProducts } from '../../lib/firestore'
 
 export default function Receipt() {
   const router = useRouter()
@@ -14,38 +15,56 @@ export default function Receipt() {
   const [products, setProducts] = useState([])
 
   useEffect(() => {
-    // Check authentication
-    const userData = localStorage.getItem('user')
-    if (!userData) {
-      router.push('/login')
-      return
-    }
-    
-    const parsedUser = JSON.parse(userData)
-    // Check if user is actually logged in (undefined means old user, treat as logged in)
-    if (parsedUser.isLoggedIn === false) {
-      router.push('/login')
-      return
-    }
-
-    // Load products
-    fetch('/data/products.json')
-      .then(res => res.json())
-      .then(data => setProducts(data.products))
-      .catch(err => console.error('Failed to load products:', err))
-
-    if (transactionId) {
-      // Load transaction
-      const transactions = JSON.parse(localStorage.getItem('transactions') || '[]')
-      const found = transactions.find(t => t.barcode === transactionId)
+    const loadData = async () => {
+      // Check authentication
+      const userData = localStorage.getItem('user')
+      if (!userData) {
+        router.push('/login')
+        return
+      }
       
-      if (found) {
-        setTransaction(found)
-      } else {
-        // Transaction not found
-        router.push('/scanner')
+      const parsedUser = JSON.parse(userData)
+      // Check if user is actually logged in (undefined means old user, treat as logged in)
+      if (parsedUser.isLoggedIn === false) {
+        router.push('/login')
+        return
+      }
+
+      // Load products from Firestore
+      try {
+        const productsData = await getAllProducts()
+        setProducts(productsData)
+      } catch (error) {
+        console.error('Failed to load products:', error)
+      }
+
+      if (transactionId) {
+        try {
+          // Load transaction from Firestore
+          const found = await getTransactionByBarcode(transactionId)
+          
+          if (found) {
+            setTransaction(found)
+          } else {
+            // Transaction not found
+            router.push('/scanner')
+          }
+        } catch (error) {
+          console.error('Error loading transaction:', error)
+          // Fallback to localStorage
+          const transactions = JSON.parse(localStorage.getItem('transactions') || '[]')
+          const found = transactions.find(t => t.barcode === transactionId)
+          
+          if (found) {
+            setTransaction(found)
+          } else {
+            router.push('/scanner')
+          }
+        }
       }
     }
+    
+    loadData()
   }, [transactionId, router])
 
   const handleScan = (barcode) => {
@@ -73,16 +92,21 @@ export default function Receipt() {
     }
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (confirm('Are you sure you want to delete this receipt? This action cannot be undone and the receipt will be permanently deleted.')) {
-      // Get all transactions
-      const transactions = JSON.parse(localStorage.getItem('transactions') || '[]')
-      // Filter out the current transaction
-      const updatedTransactions = transactions.filter(t => t.barcode !== transactionId)
-      // Save back to localStorage
-      localStorage.setItem('transactions', JSON.stringify(updatedTransactions))
-      // Redirect to profile
-      router.push('/profile')
+      try {
+        // Delete from Firestore
+        await deleteTransaction(transactionId)
+        // Redirect to profile
+        router.push('/profile')
+      } catch (error) {
+        console.error('Error deleting transaction:', error)
+        // Fallback to localStorage
+        const transactions = JSON.parse(localStorage.getItem('transactions') || '[]')
+        const updatedTransactions = transactions.filter(t => t.barcode !== transactionId)
+        localStorage.setItem('transactions', JSON.stringify(updatedTransactions))
+        router.push('/profile')
+      }
     }
   }
 

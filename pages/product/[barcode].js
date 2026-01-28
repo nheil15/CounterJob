@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 import Head from 'next/head'
 import Link from 'next/link'
 import styles from '../../styles/Product.module.css'
-import productsData from '../../data/products.json'
+import { getProductByBarcode, saveCart, getCart } from '../../lib/firestore'
 
 export default function ProductDetails() {
   const router = useRouter()
@@ -20,30 +20,46 @@ export default function ProductDetails() {
       return
     }
 
-    if (barcode) {
-      // Find product in database
-      const foundProduct = productsData.products.find(p => p.barcode === barcode)
-      
-      if (foundProduct) {
-        setProduct(foundProduct)
-      } else {
-        setProduct({
-          barcode: barcode,
-          name: 'Unknown Product',
-          price: 0,
-          category: 'Unknown',
-          stock: 0,
-          description: 'This product is not in our database.',
-          notFound: true
-        })
+    const loadData = async () => {
+      if (barcode) {
+        try {
+          // Find product in Firestore
+          const foundProduct = await getProductByBarcode(barcode)
+          
+          if (foundProduct) {
+            setProduct(foundProduct)
+          } else {
+            setProduct({
+              barcode: barcode,
+              name: 'Unknown Product',
+              price: 0,
+              category: 'Unknown',
+              stock: 0,
+              description: 'This product is not in our database.',
+              notFound: true
+            })
+          }
+        } catch (error) {
+          console.error('Error loading product:', error)
+        }
+      }
+
+      // Load cart from Firestore
+      try {
+        const user = JSON.parse(userData)
+        const firestoreCart = await getCart(user.email)
+        setCart(firestoreCart)
+      } catch (error) {
+        console.error('Error loading cart:', error)
+        // Fallback to localStorage
+        const savedCart = localStorage.getItem('cart')
+        if (savedCart) {
+          setCart(JSON.parse(savedCart))
+        }
       }
     }
 
-    // Load cart from localStorage
-    const savedCart = localStorage.getItem('cart')
-    if (savedCart) {
-      setCart(JSON.parse(savedCart))
-    }
+    loadData()
   }, [barcode, router])
 
   const increaseQuantity = () => {
@@ -65,7 +81,7 @@ export default function ProductDetails() {
     }
   }
 
-  const addToCart = () => {
+  const addToCart = async () => {
     if (!product || product.notFound) return
 
     const existingItemIndex = cart.findIndex(
@@ -85,7 +101,17 @@ export default function ProductDetails() {
     }
 
     setCart(newCart)
-    localStorage.setItem('cart', JSON.stringify(newCart))
+    
+    // Save to Firestore
+    try {
+      const userData = localStorage.getItem('user')
+      const user = JSON.parse(userData)
+      await saveCart(user.email, newCart)
+    } catch (error) {
+      console.error('Error saving cart:', error)
+      // Fallback to localStorage
+      localStorage.setItem('cart', JSON.stringify(newCart))
+    }
     
     // Redirect to cart or scanner
     router.push('/cart')

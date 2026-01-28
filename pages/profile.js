@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import Head from 'next/head'
 import Link from 'next/link'
 import styles from '../styles/Profile.module.css'
+import { getUserTransactions } from '../lib/firestore'
 
 export default function Profile() {
   const router = useRouter()
@@ -14,30 +15,39 @@ export default function Profile() {
   const [showHistory, setShowHistory] = useState(false)
 
   useEffect(() => {
-    // Check authentication
-    const userData = localStorage.getItem('user')
-    if (!userData) {
-      router.push('/login')
-      return
+    const loadData = async () => {
+      // Check authentication
+      const userData = localStorage.getItem('user')
+      if (!userData) {
+        router.push('/login')
+        return
+      }
+      
+      const parsedUser = JSON.parse(userData)
+      // Check if user is actually logged in (undefined means old user, treat as logged in)
+      if (parsedUser.isLoggedIn === false) {
+        router.push('/login')
+        return
+      }
+      setUser(parsedUser)
+      setEditedName(parsedUser.name)
+      setEditedEmail(parsedUser.email)
+
+      // Load user's transactions from Firestore
+      try {
+        const userTransactions = await getUserTransactions(parsedUser.email)
+        setTransactions(userTransactions)
+      } catch (error) {
+        console.error('Error loading transactions:', error)
+        // Fallback to localStorage
+        const allTransactions = JSON.parse(localStorage.getItem('transactions') || '[]')
+        const userTransactions = allTransactions.filter(t => t.user?.email === parsedUser.email)
+        userTransactions.sort((a, b) => new Date(b.date) - new Date(a.date))
+        setTransactions(userTransactions)
+      }
     }
     
-    const parsedUser = JSON.parse(userData)
-    // Check if user is actually logged in (undefined means old user, treat as logged in)
-    if (parsedUser.isLoggedIn === false) {
-      router.push('/login')
-      return
-    }
-    setUser(parsedUser)
-    setEditedName(parsedUser.name)
-    setEditedEmail(parsedUser.email)
-
-    // Load user's transactions
-    const allTransactions = JSON.parse(localStorage.getItem('transactions') || '[]')
-    // Filter transactions for current user
-    const userTransactions = allTransactions.filter(t => t.user?.email === parsedUser.email)
-    // Sort by date (newest first)
-    userTransactions.sort((a, b) => new Date(b.date) - new Date(a.date))
-    setTransactions(userTransactions)
+    loadData()
   }, [router])
 
   const handleLogout = () => {

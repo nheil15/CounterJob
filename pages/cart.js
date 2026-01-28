@@ -3,6 +3,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import styles from '../styles/Cart.module.css'
+import { saveCart, getCart, clearCart as clearCartFirestore } from '../lib/firestore'
 
 export default function Cart() {
   const router = useRouter()
@@ -23,14 +24,25 @@ export default function Cart() {
       return
     }
 
-    // Load cart from localStorage
-    const savedCart = localStorage.getItem('cart')
-    if (savedCart) {
-      setCart(JSON.parse(savedCart))
+    // Load cart from Firestore
+    const loadCart = async () => {
+      try {
+        const firestoreCart = await getCart(parsedUser.email)
+        setCart(firestoreCart)
+      } catch (error) {
+        console.error('Error loading cart:', error)
+        // Fallback to localStorage
+        const savedCart = localStorage.getItem('cart')
+        if (savedCart) {
+          setCart(JSON.parse(savedCart))
+        }
+      }
     }
+    
+    loadCart()
   }, [router])
 
-  const updateCartQuantity = (barcode, newQuantity) => {
+  const updateCartQuantity = async (barcode, newQuantity) => {
     if (newQuantity <= 0) {
       removeFromCart(barcode)
       return
@@ -42,19 +54,42 @@ export default function Cart() {
         : item
     )
     setCart(newCart)
-    localStorage.setItem('cart', JSON.stringify(newCart))
+    
+    try {
+      const userData = localStorage.getItem('user')
+      const user = JSON.parse(userData)
+      await saveCart(user.email, newCart)
+    } catch (error) {
+      console.error('Error saving cart:', error)
+      localStorage.setItem('cart', JSON.stringify(newCart))
+    }
   }
 
-  const removeFromCart = (barcode) => {
+  const removeFromCart = async (barcode) => {
     const newCart = cart.filter(item => item.barcode !== barcode)
     setCart(newCart)
-    localStorage.setItem('cart', JSON.stringify(newCart))
+    
+    try {
+      const userData = localStorage.getItem('user')
+      const user = JSON.parse(userData)
+      await saveCart(user.email, newCart)
+    } catch (error) {
+      console.error('Error saving cart:', error)
+      localStorage.setItem('cart', JSON.stringify(newCart))
+    }
   }
 
-  const clearCart = () => {
+  const clearCart = async () => {
     if (confirm('Are you sure you want to clear the cart?')) {
       setCart([])
-      localStorage.removeItem('cart')
+      try {
+        const userData = localStorage.getItem('user')
+        const user = JSON.parse(userData)
+        await clearCartFirestore(user.email)
+      } catch (error) {
+        console.error('Error clearing cart:', error)
+        localStorage.removeItem('cart')
+      }
     }
   }
 

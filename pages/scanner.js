@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import styles from '../styles/Scanner.module.css'
 import dynamic from 'next/dynamic'
-import productsData from '../data/products.json'
+import { getProductByBarcode, getTransactionByBarcode, getCart } from '../lib/firestore'
 
 // Dynamically import the barcode scanner component with no SSR
 const BarcodeScanner = dynamic(() => import('../components/BarcodeScanner'), {
@@ -15,12 +15,6 @@ export default function Scanner() {
   const router = useRouter()
   const [cart, setCart] = useState([])
   const [user, setUser] = useState(null)
-
-  // Load product database from JSON
-  const productDatabase = {}
-  productsData.products.forEach(product => {
-    productDatabase[product.barcode] = product
-  })
 
   useEffect(() => {
     // Check authentication
@@ -36,40 +30,46 @@ export default function Scanner() {
       router.push('/login')
       return
     }
-    setUser(JSON.parse(userData))
+    setUser(parsedUser)
 
-    // Load cart from localStorage
-    const savedCart = localStorage.getItem('cart')
-    if (savedCart) {
-      setCart(JSON.parse(savedCart))
+    // Load cart from Firestore
+    const loadCart = async () => {
+      try {
+        const firestoreCart = await getCart(parsedUser.email)
+        setCart(firestoreCart)
+      } catch (error) {
+        console.error('Error loading cart:', error)
+        // Fallback to localStorage
+        const savedCart = localStorage.getItem('cart')
+        if (savedCart) {
+          setCart(JSON.parse(savedCart))
+        }
+      }
     }
+    
+    loadCart()
   }, [router])
 
-  const handleScan = (barcode) => {
+  const handleScan = async (barcode) => {
     console.log('Scanned barcode:', barcode)
     
     // Check if it's a transaction barcode
     if (barcode.startsWith('TXN')) {
-      // Look up transaction
-      const transactions = JSON.parse(localStorage.getItem('transactions') || '[]')
-      const transaction = transactions.find(t => t.barcode === barcode)
-      
-      if (transaction) {
-        router.push(`/receipt/${barcode}`)
-        return
+      try {
+        // Look up transaction in Firestore
+        const transaction = await getTransactionByBarcode(barcode)
+        
+        if (transaction) {
+          router.push(`/receipt/${barcode}`)
+          return
+        }
+      } catch (error) {
+        console.error('Error looking up transaction:', error)
       }
     }
     
-    // Look up product in database
-    const product = productDatabase[barcode]
-    
-    if (product) {
-      // Redirect to product details page
-      router.push(`/product/${barcode}`)
-    } else {
-      // Redirect to product not found page
-      router.push(`/product/${barcode}`)
-    }
+    // Always redirect to product page (will handle not found there)
+    router.push(`/product/${barcode}`)
   }
 
   const handleError = (error) => {

@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import Head from 'next/head'
 import Link from 'next/link'
 import styles from '../styles/Checkout.module.css'
+import { createTransaction, clearCart as clearCartFirestore, getCart } from '../lib/firestore'
 
 export default function Checkout() {
   const router = useRouter()
@@ -10,59 +11,98 @@ export default function Checkout() {
   const [cart, setCart] = useState([])
 
   useEffect(() => {
-    // Check authentication
-    const userData = localStorage.getItem('user')
-    if (!userData) {
-      router.push('/login')
-      return
+    const processCheckout = async () => {
+      // Check authentication
+      const userData = localStorage.getItem('user')
+      if (!userData) {
+        router.push('/login')
+        return
+      }
+      
+      const parsedUser = JSON.parse(userData)
+      // Check if user is actually logged in (undefined means old user, treat as logged in)
+      if (parsedUser.isLoggedIn === false) {
+        router.push('/login')
+        return
+      }
+
+      try {
+        // Load cart from Firestore
+        const cartItems = await getCart(parsedUser.email)
+        
+        if (!cartItems || cartItems.length === 0) {
+          router.push('/cart')
+          return
+        }
+
+        setCart(cartItems)
+
+        // Generate transaction ID
+        const transactionId = 'TXN' + Date.now()
+        
+        // Calculate totals
+        const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
+        const tax = subtotal * 0.12
+        const total = subtotal + tax
+
+        // Create transaction
+        const newTransaction = {
+          id: transactionId,
+          barcode: transactionId,
+          items: cartItems,
+          subtotal: subtotal,
+          tax: tax,
+          total: total,
+          date: new Date().toISOString(),
+          user: parsedUser
+        }
+
+        // Save transaction to Firestore
+        await createTransaction(newTransaction)
+        
+        setTransaction(newTransaction)
+
+        // Clear cart from Firestore
+        await clearCartFirestore(parsedUser.email)
+      } catch (error) {
+        console.error('Error processing checkout:', error)
+        // Fallback to localStorage
+        const savedCart = localStorage.getItem('cart')
+        if (!savedCart || JSON.parse(savedCart).length === 0) {
+          router.push('/cart')
+          return
+        }
+
+        const cartItems = JSON.parse(savedCart)
+        setCart(cartItems)
+
+        const transactionId = 'TXN' + Date.now()
+        const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
+        const tax = subtotal * 0.12
+        const total = subtotal + tax
+
+        const newTransaction = {
+          id: transactionId,
+          barcode: transactionId,
+          items: cartItems,
+          subtotal: subtotal,
+          tax: tax,
+          total: total,
+          date: new Date().toISOString(),
+          user: JSON.parse(userData)
+        }
+
+        // Fallback: Save to localStorage
+        const transactions = JSON.parse(localStorage.getItem('transactions') || '[]')
+        transactions.push(newTransaction)
+        localStorage.setItem('transactions', JSON.stringify(transactions))
+
+        setTransaction(newTransaction)
+        localStorage.removeItem('cart')
+      }
     }
     
-    const parsedUser = JSON.parse(userData)
-    // Check if user is actually logged in (undefined means old user, treat as logged in)
-    if (parsedUser.isLoggedIn === false) {
-      router.push('/login')
-      return
-    }
-
-    // Load cart
-    const savedCart = localStorage.getItem('cart')
-    if (!savedCart || JSON.parse(savedCart).length === 0) {
-      router.push('/cart')
-      return
-    }
-
-    const cartItems = JSON.parse(savedCart)
-    setCart(cartItems)
-
-    // Generate transaction ID
-    const transactionId = 'TXN' + Date.now()
-    
-    // Calculate totals
-    const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
-    const tax = subtotal * 0.1
-    const total = subtotal + tax
-
-    // Create transaction
-    const newTransaction = {
-      id: transactionId,
-      barcode: transactionId,
-      items: cartItems,
-      subtotal: subtotal,
-      tax: tax,
-      total: total,
-      date: new Date().toISOString(),
-      user: JSON.parse(userData)
-    }
-
-    // Save transaction to history
-    const transactions = JSON.parse(localStorage.getItem('transactions') || '[]')
-    transactions.push(newTransaction)
-    localStorage.setItem('transactions', JSON.stringify(transactions))
-
-    setTransaction(newTransaction)
-
-    // Clear cart
-    localStorage.removeItem('cart')
+    processCheckout()
   }, [router])
 
   const formatDate = (dateString) => {
