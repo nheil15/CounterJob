@@ -8,6 +8,7 @@ import { saveCart, getCart, clearCart as clearCartFirestore } from '../lib/fires
 export default function Cart() {
   const router = useRouter()
   const [cart, setCart] = useState([])
+  const [showClearDialog, setShowClearDialog] = useState(false)
 
   useEffect(() => {
     // Check authentication
@@ -79,17 +80,20 @@ export default function Cart() {
     }
   }
 
-  const clearCart = async () => {
-    if (confirm('Are you sure you want to clear the cart?')) {
-      setCart([])
-      try {
-        const userData = localStorage.getItem('user')
-        const user = JSON.parse(userData)
-        await clearCartFirestore(user.email)
-      } catch (error) {
-        console.error('Error clearing cart:', error)
-        localStorage.removeItem('cart')
-      }
+  const clearCart = () => {
+    setShowClearDialog(true)
+  }
+
+  const confirmClearCart = async () => {
+    setShowClearDialog(false)
+    setCart([])
+    try {
+      const userData = localStorage.getItem('user')
+      const user = JSON.parse(userData)
+      await clearCartFirestore(user.email)
+    } catch (error) {
+      console.error('Error clearing cart:', error)
+      localStorage.removeItem('cart')
     }
   }
 
@@ -207,6 +211,32 @@ export default function Cart() {
           </>
         )}
       </main>
+
+      {/* Custom Clear Cart Confirmation Dialog */}
+      {showClearDialog && (
+        <div className={styles.dialogOverlay}>
+          <div className={styles.dialogBox}>
+            <h3 className={styles.dialogTitle}>Clear Shopping Cart?</h3>
+            <p className={styles.dialogMessage}>
+              Are you sure you want to clear all items from your shopping cart?
+            </p>
+            <div className={styles.dialogActions}>
+              <button 
+                className={styles.dialogCancel}
+                onClick={() => setShowClearDialog(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className={styles.dialogConfirm}
+                onClick={confirmClearCart}
+              >
+                Clear Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

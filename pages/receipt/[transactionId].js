@@ -165,7 +165,7 @@ export default function Receipt() {
           
           <div className={styles.receiptHeader}>
             <h2>RECEIPT</h2>
-            <p className={styles.storeName}>Sari-Sari</p>
+            <p className={styles.storeName}>Sari-Sari Store</p>
             <p className={styles.receiptDate}>{formatDate(transaction.date)}</p>
           </div>
 
