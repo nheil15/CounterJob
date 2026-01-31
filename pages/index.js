@@ -7,8 +7,46 @@ import styles from '../styles/Home.module.css'
 export default function Home() {
   const router = useRouter()
   const [userName, setUserName] = useState('')
+  const [activeSection, setActiveSection] = useState('hero')
 
   useEffect(() => {
+    // Check if user is logged in (but don't redirect)
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      const user = JSON.parse(userData)
+      if (user.isLoggedIn === true) {
+        setUserName(user.name?.split(' ')[0] || 'there')
+      }
+    }
+
+    // Scroll listener to detect active section
+    const handleScroll = () => {
+      const sections = ['hero', 'about', 'features', 'cta']
+      const scrollPosition = window.scrollY + window.innerHeight / 2
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const sectionId = sections[i]
+        const element = document.getElementById(sectionId)
+        if (element) {
+          const rect = element.getBoundingClientRect()
+          const elementTop = rect.top + window.scrollY
+          
+          if (scrollPosition >= elementTop) {
+            setActiveSection(sectionId)
+            break
+          }
+        }
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll() // Check initial position
+
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [router])
+
+  const handleStartShopping = (e) => {
+    e.preventDefault()
     // Check if user is logged in
     const userData = localStorage.getItem('user')
     if (!userData) {
@@ -22,8 +60,17 @@ export default function Home() {
       return
     }
     
-    setUserName(user.name?.split(' ')[0] || 'there')
-  }, [router])
+    // User is logged in, go to scanner
+    router.push('/scanner')
+  }
+
+  const scrollToSection = (sectionId) => {
+    setActiveSection(sectionId)
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
 
   return (
     <div className={styles.container}>
@@ -34,17 +81,6 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/* Top Info Bar */}
-      <div className={styles.topBar}>
-        <div className={styles.topBarContent}>
-          <div className={styles.contactInfo}>
-            <span>📞 +1 800 123 4567</span>
-            <span>✉️ info@counterjob.com</span>
-            <span>📍 Your Location</span>
-          </div>
-        </div>
-      </div>
-
       {/* Navigation */}
       <nav className={styles.navbar}>
         <div className={styles.navContent}>
@@ -53,17 +89,17 @@ export default function Home() {
             <span className={styles.logoBadge}>FAST</span>
           </div>
           <div className={styles.navLinks}>
-            <Link href="/scanner">HOME</Link>
-            <Link href="/cart">ABOUT</Link>
-            <Link href="/profile">TYPOGRAPHY</Link>
-            <Link href="/scanner" className={styles.contactsLink}>CONTACTS</Link>
+            <a href="#hero" onClick={(e) => { e.preventDefault(); scrollToSection('hero') }}>HOME</a>
+            <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about') }}>ABOUT</a>
+            <a href="#features" onClick={(e) => { e.preventDefault(); scrollToSection('features') }}>FEATURES</a>
+            <a href="#cta" onClick={(e) => { e.preventDefault(); scrollToSection('cta') }} className={styles.contactsLink}>SCAN</a>
           </div>
         </div>
       </nav>
 
       <main className={styles.main}>
         {/* Hero Section */}
-        <section className={styles.hero}>
+        <section id="hero" className={styles.hero}>
           <div className={styles.heroContent}>
             <div className={styles.heroPattern}></div>
             <h1 className={styles.heroTitle}>
@@ -80,7 +116,7 @@ export default function Home() {
         </section>
 
         {/* About Section */}
-        <section className={styles.aboutSection}>
+        <section id="about" className={styles.aboutSection}>
           <div className={styles.aboutContent}>
             <div className={styles.aboutImage}>
               <div className={styles.imagePlaceholder}>🛒</div>
@@ -92,9 +128,6 @@ export default function Home() {
               </h2>
               <div className={styles.aboutUnderline}></div>
               <p className={styles.aboutDescription}>
-                Small or big, your business will love our financial help and business consultations! We are happy when our clients are too... Actually, this is quite simple to achieve - because each time we help them in sorting out different accounting intricacies or save the day before filing the taxes, they are so grateful!
-              </p>
-              <p className={styles.aboutDescription}>
                 With CounterJob, you can scan products yourself, manage your cart in real-time, and complete your purchase - all from your phone. No more standing in endless queues. Just scan, pay, and go!
               </p>
             </div>
@@ -102,7 +135,7 @@ export default function Home() {
         </section>
 
         {/* Features Section */}
-        <section className={styles.featuresSection}>
+        <section id="features" className={styles.featuresSection}>
           <div className={styles.featuresGrid}>
             <div className={styles.featureCard}>
               <div className={styles.featureIcon}>📱</div>
@@ -123,11 +156,11 @@ export default function Home() {
         </section>
 
         {/* CTA Section */}
-        <section className={styles.ctaSection}>
+        <section id="cta" className={styles.ctaSection}>
           <div className={styles.ctaContent}>
             <h2>The future is fast and convenient.</h2>
             <p>Experience seamless shopping with our self-checkout system</p>
-            <Link href="/scanner" className={styles.ctaButton}>Start Shopping Now</Link>
+            <button onClick={handleStartShopping} className={styles.ctaButton}>Start Shopping Now</button>
           </div>
         </section>
       </main>

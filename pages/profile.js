@@ -13,6 +13,7 @@ export default function Profile() {
   const [editedEmail, setEditedEmail] = useState('')
   const [transactions, setTransactions] = useState([])
   const [showHistory, setShowHistory] = useState(false)
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
 
   useEffect(() => {
     const loadData = async () => {
@@ -51,18 +52,21 @@ export default function Profile() {
   }, [router])
 
   const handleLogout = () => {
-    if (confirm('Are you sure you want to logout?')) {
-      // Keep user profile data but mark as logged out
-      const userData = localStorage.getItem('user')
-      if (userData) {
-        const parsedUser = JSON.parse(userData)
-        parsedUser.isLoggedIn = false
-        localStorage.setItem('user', JSON.stringify(parsedUser))
-      }
-      localStorage.removeItem('authToken')
-      localStorage.removeItem('cart')
-      router.push('/login')
+    setShowLogoutDialog(true)
+  }
+
+  const confirmLogout = () => {
+    setShowLogoutDialog(false)
+    // Keep user profile data but mark as logged out
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      const parsedUser = JSON.parse(userData)
+      parsedUser.isLoggedIn = false
+      localStorage.setItem('user', JSON.stringify(parsedUser))
     }
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('cart')
+    router.push('/login')
   }
 
   const handleSaveProfile = () => {
@@ -282,6 +286,32 @@ export default function Profile() {
           </button>
         </div>
       </main>
+
+      {/* Custom Logout Confirmation Dialog */}
+      {showLogoutDialog && (
+        <div className={styles.dialogOverlay}>
+          <div className={styles.dialogBox}>
+            <h3 className={styles.dialogTitle}>Logout Confirmation</h3>
+            <p className={styles.dialogMessage}>
+              Are you sure you want to logout?
+            </p>
+            <div className={styles.dialogActions}>
+              <button 
+                className={styles.dialogCancel}
+                onClick={() => setShowLogoutDialog(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className={styles.dialogConfirm}
+                onClick={confirmLogout}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
